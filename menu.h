@@ -1,5 +1,6 @@
+#include "Tape.h"
 
-void startmenu(void);
-void mainMenu(void);
-void configMenu(void);
-void sortingMenu(void);
+void startMenu(Tape tape);
+void mainMenu(Tape tape);
+void configMenu(Tape tape);
+void sortingMenu(Tape tape);

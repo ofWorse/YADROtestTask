@@ -1,6 +1,6 @@
 
 CXX = c++
-SRCS = inputProtection.h text.h menu.h menuItems.h main.cpp text.cpp menu.cpp
+SRCS = inputProtection.h text.h menuItems.h file.h Tape.h menu.h file.cpp Tape.cpp main.cpp text.cpp menu.cpp 
 OBJS = $(SRCS:.cpp=.o)
 TARGET = yadro_test 
 
@@ -14,3 +14,4 @@ $(TARGET): $(OBJS)
 
 clean:
 	rm -f $(OBJS) $(TARGET)
+

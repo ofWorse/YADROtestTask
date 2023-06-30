@@ -1,13 +1,16 @@
 #include <cstdlib>
 #include <locale.h>
-#include "text.h"
 #include "menu.h"
+#include "text.h"
 
 int main(void) {
-
 	setlocale(LC_ALL, "RU");
+
+	Tape tape;
+	tape.readConfig();
+
 	hello();
-	startmenu();
+	startMenu(tape);
 	std::system("pause");
 	return EXIT_SUCCESS;
 }

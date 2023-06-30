@@ -2,28 +2,32 @@
 #include "text.h"
 #include "inputProtection.h"
 #include "menuItems.h"
+#include <cstdlib>
 
-void startmenu(void) {
+void startMenu(Tape tape) {
 	int userChoice;
 	do {
 		menu(numberMenu::START_MENU);
 		switch (inputProtection(userChoice, 1, 2); static_cast<startMenuChoice>(userChoice)) {
 			case(startMenuChoice::START):
-				mainMenu();
+				mainMenu(tape);
 				break;
 			case(startMenuChoice::EXIT):
+				cout << "Программа завершена." << endl;
+				exit(EXIT_SUCCESS);
 				break;
 		}
 	} while(static_cast<startMenuChoice>(userChoice) != startMenuChoice::EXIT);
 }
 
-void mainMenu(void) {
+void mainMenu(Tape tape) {
 	int userChoice;
 	do {
 		menu(numberMenu::MAIN_MENU);
 		switch (inputProtection(userChoice, 1, 3); static_cast<mainMenuChoice>(userChoice)) {
 			case(mainMenuChoice::SORT_DATA):
-				cout << "В процессе..." << endl;
+				tape.setupPaths();
+				cout << "TODO: РЕАЛИЗОВАТЬ СОРТИРОВКУ ФАЙЛА!" << endl;
 				break;
 			case(mainMenuChoice::CONFIG_DATA):
 				cout << "В процессе..." << endl;
@@ -34,7 +38,7 @@ void mainMenu(void) {
 	} while(static_cast<mainMenuChoice>(userChoice) != mainMenuChoice::BACK);
 }
 
-void sortingMenu(void) {
+void sortingMenu(Tape tape) {
 	int userChoice;
 	do {
 		menu(numberMenu::SORT_DATA_MENU);
@@ -49,7 +53,7 @@ void sortingMenu(void) {
 }
 
 
-void configMenu(void) {
+void configMenu(Tape tape) {
 	int userChoice;
 	do {
 		switch (inputProtection(userChoice, 1, 2); static_cast<configMenuChoice>(userChoice)) {
