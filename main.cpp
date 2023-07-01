@@ -6,11 +6,11 @@
 int main(void) {
 	setlocale(LC_ALL, "RU");
 
-	Tape tape;
-	tape.readConfig();
+	Tape *tape = new Tape();
 
+	tape->readConfig();
 	hello();
-	startMenu(tape);
+	startMenu(*tape);
 	std::system("pause");
 	return EXIT_SUCCESS;
 }

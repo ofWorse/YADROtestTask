@@ -1,5 +1,5 @@
-#include "menu.h"
 #include "text.h"
+#include "menu.h"
 #include "inputProtection.h"
 #include "menuItems.h"
 #include <cstdlib>
@@ -27,10 +27,12 @@ void mainMenu(Tape tape) {
 		switch (inputProtection(userChoice, 1, 3); static_cast<mainMenuChoice>(userChoice)) {
 			case(mainMenuChoice::SORT_DATA):
 				tape.setupPaths();
+				tape.makeTape();
 				cout << "TODO: РЕАЛИЗОВАТЬ СОРТИРОВКУ ФАЙЛА!" << endl;
 				break;
 			case(mainMenuChoice::CONFIG_DATA):
-				cout << "В процессе..." << endl;
+				tape.rewriteConfig();
+				tape.readConfig();
 				break;
 			case(mainMenuChoice::BACK):
 				break;

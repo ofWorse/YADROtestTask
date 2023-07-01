@@ -1,5 +1,6 @@
 #include "file.h"
 #include "inputProtection.h"
+#include <climits>
 #include <fstream>
 #include <system_error>
 #include <random>
@@ -52,7 +53,7 @@ void writeDataToFile(const string &filePath, size_t N) {
 	if(out) {
 		random_device rand;
 		mt19937 generate(rand());
-		uniform_int_distribution<int> distribution(-1000, 1000);
+		uniform_int_distribution<int> distribution(INT_MIN, INT_MAX);
 
 		for(int i = 0; i < N; ++i) 
 			out << distribution(generate) << "\n"; 
