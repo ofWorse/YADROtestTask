@@ -26,17 +26,23 @@ void mainMenu(void) {
 	tape.readConfig();
 	do {
 		menu(numberMenu::MAIN_MENU);
-		switch (inputProtection(userChoice, 1, 3); static_cast<mainMenuChoice>(userChoice)) {
+		switch (inputProtection(userChoice, 1, 4); static_cast<mainMenuChoice>(userChoice)) {
 			case(mainMenuChoice::SORT_DATA):
 				if(tape.consistPaths()) {
 					rewritePathsMenu(tape);
-					break;
-				} else {
+				} else { 
 					tape.setupPaths();
 					tape.makeTape();
 					tape.sortTape();
+				}
+				break;
+			case(mainMenuChoice::SHIFT_DATA):
+				if(tape.getTape().empty()) {
+					cout << "Лента пуста!" << endl;
 					break;
 				}
+				shiftDataMenu(tape);
+				break;
 			case(mainMenuChoice::CONFIG_DATA):
 				tape.rewriteConfig();
 				tape.readConfig();
@@ -47,6 +53,22 @@ void mainMenu(void) {
 	} while(static_cast<mainMenuChoice>(userChoice) != mainMenuChoice::BACK);
 }
 
+void shiftDataMenu(Tape tape) {
+	int userChoice;
+	do {
+		menu(numberMenu::SHIFT_DATA_MENU);
+		switch (inputProtection(userChoice, 1, 3); static_cast<shiftDataMenuChoice>(userChoice)) {
+			case(shiftDataMenuChoice::RIGHT):
+				tape.moveData(true);
+				break;
+			case(shiftDataMenuChoice::LEFT):
+				tape.moveData(false);
+				break;
+			case(shiftDataMenuChoice::BACK):
+				break;
+		}
+	} while(static_cast<shiftDataMenuChoice>(userChoice) != shiftDataMenuChoice::BACK);
+}
 
 void rewritePathsMenu(Tape tape) {
 	int userChoice;

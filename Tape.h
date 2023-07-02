@@ -42,4 +42,6 @@ public:
 	void readConfig(void);
 
 	bool consistPaths(void);
+
+	vector<int> getTape(void) {return tape;};
 };

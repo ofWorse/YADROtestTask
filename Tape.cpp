@@ -76,12 +76,12 @@ void Tape::sortTape(void) {
 
 void Tape::shiftLeft(void) {
 	//this->shift_step %= tape.size(); // преобразование сдвига к диапозону размера вектора
-	rotate(tape.rbegin(), tape.rbegin() + shift_step, tape.rend());
+	rotate(tape.begin(), tape.begin() + shift_step, tape.end());
 }
 
 void Tape::shiftRight(void) {
 	//shift_amount %= tape.size(); // преобразование сдвига к диапозону размера вектора
-	rotate(tape.begin(), tape.begin() + shift_step, tape.end());
+	rotate(tape.rbegin(), tape.rbegin() + shift_step, tape.rend());
 }
 
 void Tape::moveData(bool right) {
