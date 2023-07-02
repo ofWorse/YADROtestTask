@@ -35,10 +35,50 @@ void Tape::makeTape(void) {
 	}
 }
 
-void Tape::sortEveryFile(void) {
+vector<int> merge(const vector<int> &tape1, const vector<int> &tape2) {
+	vector<int> resultTape;
+	size_t i = 0, j = 0;
+
+	while(i < tape1.size() && j < tape2.size()) {
+		if(tape1[i] <= tape2[j]) 
+			resultTape.push_back(tape1[i++]);
+		else resultTape.push_back(tape2[j++]);
+	}
+	while(i < tape1.size()) 
+		resultTape.push_back(tape1[i++]);
+	while(j < tape2.size()) 
+		resultTape.push_back(tape2[j++]);
+	return resultTape;
 }
 
-// 20, 2. 10 векторов.
+// TODO: очистить!!!
+// NOTE: Не сохраняет результат в вектор или файл (файл output.txt пустой после данных операций)
+void Tape::sortEveryFile(int begin, int countOfFiles, vector<int> &tape) {
+	if(begin < countOfFiles) {
+		string path1 = tmp_dir_path + "tmp" + to_string(begin) + ".txt";
+		string path2 = tmp_dir_path + "tmp" + to_string(begin+1) + ".txt";
+		vector<int> tape1 = writeDataToVector(path1);
+		vector<int> tape2 = writeDataToVector(path2);
+		sort(tape1.begin(), tape1.end());
+		sort(tape2.begin(), tape2.end());
+		vector<int> tmpTape = merge(tape1, tape2);
+		copy(tmpTape.begin(), tmpTape.end(), tape.begin());
+		sortEveryFile(begin+1, countOfFiles, tape);
+	}
+	else if(begin == countOfFiles) {
+		string path1 = tmp_dir_path + "tmp" + to_string(begin) + ".txt";
+		string path2 = tmp_dir_path + "tmpLast.txt";
+		vector<int> tape1 = writeDataToVector(path1);
+		vector<int> tape2 = writeDataToVector(path2);
+		sort(tape1.begin(), tape1.end());
+		sort(tape2.begin(), tape2.end());
+		vector<int> tmpTape = merge(tape1, tape2);
+		copy(tmpTape.begin(), tmpTape.end(), tape.begin());
+		writeVectorToFile(tape, this->output_path);
+	}
+	else cout << "Ошибка в размерности вектора!" << endl;
+}
+
 void Tape::splitVectorsAndSort(void) {
 	int count = (this->tape.size()) / this->M;
 	vector<int> tmpTape, copyTape = this->tape;
@@ -56,7 +96,7 @@ void Tape::splitVectorsAndSort(void) {
 		tmpTape.clear();
 	}
 	// TODO: Далее требуется отсортировать tmp файлы.
-	sortEveryFile();	
+	sortEveryFile(1, count, tmpTape);	
 }
 
 void Tape::sortTape(void) {

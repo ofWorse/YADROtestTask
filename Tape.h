@@ -30,7 +30,7 @@ private:
 	void shiftLeft(void); 
 	void shiftRight(void); 
 	void splitVectorsAndSort(void);
-	void sortEveryFile(void);
+	void sortEveryFile(int begin, int countOfFiles, vector<int> &tape);
 public:
 	Tape(void) = default;
 
