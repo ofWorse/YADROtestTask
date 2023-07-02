@@ -2,8 +2,10 @@
 #include "inputProtection.h"
 #include <climits>
 #include <fstream>
+#include <string>
 #include <system_error>
 #include <random>
+#include <vector>
 
 void nameFileProtected(string &filePath, bool saveOrNot) {
 	fstream file;
@@ -65,3 +67,31 @@ void writeDataToFile(const string &filePath, size_t N) {
 	}
 }
 
+vector<int> writeDataToVector(const string &path) {
+	ifstream input(path);
+	vector<int> res;
+	string line;
+	if(input) {
+		while(getline(input, line)) {
+			int number = stoi(line);
+			res.push_back(number);
+		}	
+		input.close();
+		return res;
+	}
+	else {
+		cout << "Ошибка открытия файла!" << endl;
+	}
+}
+
+void writeVectorToFile(const vector<int> &tape, const string &path) {
+	ofstream out(path);
+	if(out) {
+		for(const auto &num : tape)
+			out << num << "\n";
+		out.close();
+	}
+	else {
+		cout << "Ошибка открытия файла!" << endl;
+	}
+}

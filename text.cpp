@@ -22,6 +22,13 @@ void menu(const numberMenu menuNumber) {
         cout << "3 - Назад." << endl;
         cout << endl;
         break;
+	case(numberMenu::REWRITE_PATHS_MENU):
+		cout << "Данные о местоположении файла уже записаны, перезаписать?" << endl;
+		cout << "1 - Да;" << endl;
+		cout << "2 - Нет;" << endl;
+		cout << "3 - Назад." << endl;
+		cout << endl;
+		break;
 	}
 }
 

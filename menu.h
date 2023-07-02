@@ -1,6 +1,7 @@
 #include "Tape.h"
 
-void startMenu(Tape tape);
-void mainMenu(Tape tape);
+void startMenu(void);
+void mainMenu(void);
 void configMenu(Tape tape);
+void rewritePathsMenu(Tape tape);
 void sortingMenu(Tape tape);

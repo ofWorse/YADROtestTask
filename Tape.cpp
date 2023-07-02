@@ -1,10 +1,16 @@
-#include "Tape.h"
-#include "inputProtection.h"
+#include <cstdio>
 #include <fstream>
+#include <filesystem>
 #include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <algorithm>
+#include <type_traits>
+#include <vector>
+#include "Tape.h"
+#include "inputProtection.h"
+
 
 void Tape::setupPaths(void) {
 	cout << "Введите путь к исходной ленте." << endl;
@@ -18,9 +24,10 @@ void Tape::setupPaths(void) {
 
 void Tape::makeTape(void) {
 	srand(time(NULL));
-	if(!this->input_path.empty() || !this->output_path.empty()) {
+	if(consistPaths()) {
 		writeDataToFile(input_path, this->N);
-		cout << "Данные в файл \'" << input_path << "\' успешно загружены." << endl;
+		this->tape = writeDataToVector(this->input_path);
+		cout << "Данные в файл " << input_path << " успешно загружены." << endl;
 	}
 	else {
 		cout << "Для начала, введите путь к исходным файлам!" << endl;
@@ -28,8 +35,58 @@ void Tape::makeTape(void) {
 	}
 }
 
+void Tape::sortEveryFile(void) {
+}
+
+// 20, 2. 10 векторов.
+void Tape::splitVectorsAndSort(void) {
+	int count = (this->tape.size()) / this->M;
+	vector<int> tmpTape, copyTape = this->tape;
+	for(int i = 1; i <= count; i++) {
+		for(int j = 0; j < this->M; j++) {
+			tmpTape.push_back(copyTape.front());
+			copyTape.erase(copyTape.begin());
+		}
+		writeVectorToFile(tmpTape, this->tmp_dir_path + "tmp" + to_string(i) + ".txt");
+		tmpTape.clear();
+	}
+	if(!copyTape.empty()) {
+		for(const auto &num : copyTape) tmpTape.push_back(num);
+		writeVectorToFile(tmpTape, this->tmp_dir_path + "tmpLast.txt");
+		tmpTape.clear();
+	}
+	// TODO: Далее требуется отсортировать tmp файлы.
+	sortEveryFile();	
+}
+
 void Tape::sortTape(void) {
-	return;
+	cout << " Начало сортировки..." << endl;
+
+	if(this->tape.size() > this->M) { //TODO: переделать
+		splitVectorsAndSort();	
+	}	
+	else {
+		sort(this->tape.begin(), this->tape.end());
+		writeVectorToFile(this->tape, this->output_path);
+	}
+
+	cout << " Конец сортировки." << endl;
+	cout << " Отсортированная лента записана в файл: " << this->output_path << endl;
+}
+
+void Tape::shiftLeft(void) {
+	//this->shift_step %= tape.size(); // преобразование сдвига к диапозону размера вектора
+	rotate(tape.rbegin(), tape.rbegin() + shift_step, tape.rend());
+}
+
+void Tape::shiftRight(void) {
+	//shift_amount %= tape.size(); // преобразование сдвига к диапозону размера вектора
+	rotate(tape.begin(), tape.begin() + shift_step, tape.end());
+}
+
+void Tape::moveData(bool right) {
+	right ? shiftRight() : shiftLeft();
+	writeVectorToFile(this->tape, this->input_path);	
 }
 
 void Tape::rewriteConfig(void) {
@@ -79,7 +136,16 @@ void Tape::readConfig(void) {
 			}
 		}
 	}
-	this->N = params.at(0);
-	this->M = params.at(1);
+	if(params.size() >= 5) {
+		this->N = params.at(0);
+		this->M = params.at(1);
+		this->recording_delay = params.at(2);
+		this->tape_rewinding = params.at(3);
+		this->shift_step = params.at(4);
+	}
+	config.close();
 }
 
+bool Tape::consistPaths(void) {
+	return !(this->input_path.empty() || this->output_path.empty());
+}

@@ -1,6 +1,6 @@
 
-CXX = c++
-SRCS = inputProtection.h text.h menuItems.h file.h Tape.h menu.h text.cpp file.cpp Tape.cpp menu.cpp main.cpp 
+CXX = c++                  #io, lim.        io,vec. vec,<.  
+SRCS =  text.h menuItems.h inputProtection.h file.h Tape.h text.cpp file.cpp Tape.cpp menu.cpp main.cpp 
 OBJS = $(SRCS:.cpp=.o)
 TARGET = yadro_test 
 
