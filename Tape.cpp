@@ -7,7 +7,8 @@
 #include <string>
 #include <algorithm>
 #include <type_traits>
-#include <vector>
+#include <iomanip>
+#include <cmath>
 #include "Tape.h"
 #include "inputProtection.h"
 
@@ -35,75 +36,88 @@ void Tape::makeTape(void) {
 	}
 }
 
-vector<int> merge(const vector<int> &tape1, const vector<int> &tape2) {
-	vector<int> resultTape;
-	size_t i = 0, j = 0;
 
-	while(i < tape1.size() && j < tape2.size()) {
-		if(tape1[i] <= tape2[j]) 
-			resultTape.push_back(tape1[i++]);
-		else resultTape.push_back(tape2[j++]);
-	}
-	while(i < tape1.size()) 
-		resultTape.push_back(tape1[i++]);
-	while(j < tape2.size()) 
-		resultTape.push_back(tape2[j++]);
-	return resultTape;
+// Функция для разделения вектора на чанки и их сортировки
+void Tape::sortChunks(void) {
+    int numChunks = ceil(tape.size() * sizeof(int) / this->M); // Количество чанков
+
+    for (int i = 0; i < numChunks; i++) {
+        int start = i * this->M / sizeof(int);
+        int end = min((i + 1) * this->M / sizeof(int), this->tape.size());
+        sort(this->tape.begin() + start, this->tape.begin() + end);
+    }
 }
 
-// TODO: очистить!!!
-// NOTE: Не сохраняет результат в вектор или файл (файл output.txt пустой после данных операций)
-void Tape::sortEveryFile(int begin, int countOfFiles, vector<int> &tape) {
-	if(begin < countOfFiles) {
-		string path1 = tmp_dir_path + "tmp" + to_string(begin) + ".txt";
-		string path2 = tmp_dir_path + "tmp" + to_string(begin+1) + ".txt";
-		vector<int> tape1 = writeDataToVector(path1);
-		vector<int> tape2 = writeDataToVector(path2);
-		sort(tape1.begin(), tape1.end());
-		sort(tape2.begin(), tape2.end());
-		vector<int> tmpTape = merge(tape1, tape2);
-		copy(tmpTape.begin(), tmpTape.end(), tape.begin());
-		sortEveryFile(begin+1, countOfFiles, tape);
-	}
-	else if(begin == countOfFiles) {
-		string path1 = tmp_dir_path + "tmp" + to_string(begin) + ".txt";
-		string path2 = tmp_dir_path + "tmpLast.txt";
-		vector<int> tape1 = writeDataToVector(path1);
-		vector<int> tape2 = writeDataToVector(path2);
-		sort(tape1.begin(), tape1.end());
-		sort(tape2.begin(), tape2.end());
-		vector<int> tmpTape = merge(tape1, tape2);
-		copy(tmpTape.begin(), tmpTape.end(), tape.begin());
-		writeVectorToFile(tape, this->output_path);
-	}
-	else cout << "Ошибка в размерности вектора!" << endl;
+// Функция для объединения чанков и записи в выходной файл
+void Tape::mergeChunks(vector<string> &chunkFiles) {
+    vector<ifstream> inputFiles(chunkFiles.size());
+    vector<int> currentValues(chunkFiles.size());
+
+    ofstream outputFile(this->output_path);
+    if (outputFile.is_open()) {
+        // Открываем все чанки
+        for (size_t i = 0; i < chunkFiles.size(); i++) {
+            inputFiles[i].open(chunkFiles[i]);
+            if (!inputFiles[i].is_open()) {
+                cout << "Unable to open file: " << chunkFiles[i] << endl;
+                return;
+            }
+            // Читаем первое значение из каждого чанка
+            inputFiles[i] >> currentValues[i];
+        }
+
+        // Пока есть непустые чанки
+        while (!inputFiles.empty()) {
+            int minValue = currentValues[0];
+            int minIndex = 0;
+
+            // Выбираем минимальное значение из текущих значений чанков
+            for (size_t i = 1; i < currentValues.size(); i++) {
+                if (currentValues[i] < minValue) {
+                    minValue = currentValues[i];
+                    minIndex = i;
+                }
+            }
+
+            // Записываем минимальное значение в выходной файл
+            outputFile << minValue << "\n";
+
+            // Читаем следующее значение из выбранного чанка
+            if (inputFiles[minIndex] >> currentValues[minIndex]) {
+                // Чтение успешно
+            } else {
+                // Чанк закончился, удаляем из списка
+                inputFiles.erase(inputFiles.begin() + minIndex);
+                currentValues.erase(currentValues.begin() + minIndex);
+            }
+        }
+
+        outputFile.close();
+
+        // Закрываем и удаляем все чанки
+        for (size_t i = 0; i < chunkFiles.size(); i++) {
+            inputFiles[i].close();
+            remove(chunkFiles[i].c_str());
+        }
+    } else {
+        cout << "Unable to open output file: " << this->output_path << endl;
+        return;
+    }
 }
 
-void Tape::splitVectorsAndSort(void) {
-	int count = (this->tape.size()) / this->M;
-	vector<int> tmpTape, copyTape = this->tape;
-	for(int i = 1; i <= count; i++) {
-		for(int j = 0; j < this->M; j++) {
-			tmpTape.push_back(copyTape.front());
-			copyTape.erase(copyTape.begin());
-		}
-		writeVectorToFile(tmpTape, this->tmp_dir_path + "tmp" + to_string(i) + ".txt");
-		tmpTape.clear();
-	}
-	if(!copyTape.empty()) {
-		for(const auto &num : copyTape) tmpTape.push_back(num);
-		writeVectorToFile(tmpTape, this->tmp_dir_path + "tmpLast.txt");
-		tmpTape.clear();
-	}
-	// TODO: Далее требуется отсортировать tmp файлы.
-	sortEveryFile(1, count, tmpTape);	
-}
 
 void Tape::sortTape(void) {
 	cout << " Начало сортировки..." << endl;
 
-	if(this->tape.size() > this->M) { //TODO: переделать
-		splitVectorsAndSort();	
+	if(this->tape.size()  > this->M) { 
+		//splitVectorsAndSort();
+		vector<string> chunkFiles;
+		for(int i = 1; i <= this->M; i++) { 
+			string path = "/home/oworse/Desktop/myFiles/YADROtestTask/tmp/tmp" + to_string(i) + ".txt";
+			chunkFiles.push_back(path);
+		}
+		sortChunks();
+		mergeChunks(chunkFiles);
 	}	
 	else {
 		sort(this->tape.begin(), this->tape.end());

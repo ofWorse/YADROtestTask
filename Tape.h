@@ -19,7 +19,7 @@ private:
 	string output_path{};
 	
 	string config_path = "./configFile.txt";
-	string tmp_dir_path	=  "./tmp/";
+	string tmp_dir_path	=  "./tmp1/";
 
 	size_t N;
 	size_t M;
@@ -31,6 +31,8 @@ private:
 	void shiftRight(void); 
 	void splitVectorsAndSort(void);
 	void sortEveryFile(int begin, int countOfFiles, vector<int> &tape);
+	void sortChunks(void);
+	void mergeChunks(vector<string> &chunkFiles);
 public:
 	Tape(void) = default;
 
