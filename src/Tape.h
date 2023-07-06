@@ -19,7 +19,7 @@ private:
 	string output_path{};
 	
 	string config_path = "./configFile.txt";
-	string tmp_dir_path	=  "./tmp1/";
+	string tmp_dir_path	=  "../tmp/";
 
 	size_t N;
 	size_t M;

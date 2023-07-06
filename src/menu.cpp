@@ -77,10 +77,14 @@ void rewritePathsMenu(Tape tape) {
 		switch (inputProtection(userChoice, 1, 3); static_cast<rewritePathsMenuChoice>(userChoice)) {
 			case(rewritePathsMenuChoice::YES):
 				tape.setupPaths();
-				break;
+				tape.makeTape();
+				tape.sortTape();
+				return;
 			case(rewritePathsMenuChoice::NO):
 				cout << "Операция отменена." << endl;
-				break;
+				tape.makeTape();
+				tape.sortTape();
+				return;
 			case(rewritePathsMenuChoice::BACK):
 				break;
 		}

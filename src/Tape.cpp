@@ -2,13 +2,16 @@
 #include <fstream>
 #include <filesystem>
 #include <cstdlib>
+#include <functional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <algorithm>
 #include <type_traits>
 #include <iomanip>
-#include <cmath>
+#include <limits>
+#include <queue>
+#include <utility>
 #include "Tape.h"
 #include "inputProtection.h"
 
@@ -37,93 +40,78 @@ void Tape::makeTape(void) {
 }
 
 
-// Функция для разделения вектора на чанки и их сортировки
-void Tape::sortChunks(void) {
-    int numChunks = ceil(tape.size() * sizeof(int) / this->M); // Количество чанков
+void Tape::splitVectorsAndSort(void) {
+	ifstream input(this->input_path);
+	if(!input) {
+		cerr << "Невозможно открыть файл!" << endl;
+		return;
+	}
 
-    for (int i = 0; i < numChunks; i++) {
-        int start = i * this->M / sizeof(int);
-        int end = min((i + 1) * this->M / sizeof(int), this->tape.size());
-        sort(this->tape.begin() + start, this->tape.begin() + end);
-    }
-}
+	vector<int> buffer;
+	string tempFileName = "tmp";
+	int tempFileCount = 0;
 
-// Функция для объединения чанков и записи в выходной файл
-void Tape::mergeChunks(vector<string> &chunkFiles) {
-    vector<ifstream> inputFiles(chunkFiles.size());
-    vector<int> currentValues(chunkFiles.size());
+	while(!input.eof()) {
+		buffer.clear();
+		size_t bytesRead = 0;
+		while(bytesRead < this->M && !input.eof()) {
+			int num;
+			input >> num;
+			buffer.push_back(num);
+			bytesRead += sizeof(int);
+		}
 
-    ofstream outputFile(this->output_path);
-    if (outputFile.is_open()) {
-        // Открываем все чанки
-        for (size_t i = 0; i < chunkFiles.size(); i++) {
-            inputFiles[i].open(chunkFiles[i]);
-            if (!inputFiles[i].is_open()) {
-                cout << "Unable to open file: " << chunkFiles[i] << endl;
-                return;
-            }
-            // Читаем первое значение из каждого чанка
-            inputFiles[i] >> currentValues[i];
-        }
+		sort(buffer.begin(), buffer.end());
 
-        // Пока есть непустые чанки
-        while (!inputFiles.empty()) {
-            int minValue = currentValues[0];
-            int minIndex = 0;
+		ofstream tempFile(this->tmp_dir_path + tempFileName + to_string(tempFileCount++) + ".txt");
+		if(!tempFile) {
+			cerr << "Невозможно открыть временный файл!" << endl;
+			return;
+		}
+		for(const auto &num : buffer) tempFile << num << endl;
+		tempFile.close();
+	}
+	input.close();
 
-            // Выбираем минимальное значение из текущих значений чанков
-            for (size_t i = 1; i < currentValues.size(); i++) {
-                if (currentValues[i] < minValue) {
-                    minValue = currentValues[i];
-                    minIndex = i;
-                }
-            }
+	vector<ifstream> tempFiles(tempFileCount);
+	vector<int> minValues(tempFileCount, numeric_limits<int>::max());
+	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
 
-            // Записываем минимальное значение в выходной файл
-            outputFile << minValue << "\n";
+	for(int i = 0; i < tempFileCount; i++) {
+		tempFiles[i].open(this->tmp_dir_path + tempFileName + to_string(i) + ".txt");
+		if(!tempFiles[i]) {
+			cerr << "Невозможно открыть временный файл!" << endl;
+			return;
+		}
+		int num;
+		if(tempFiles[i] >> num) pq.push({num, i});
+	}
 
-            // Читаем следующее значение из выбранного чанка
-            if (inputFiles[minIndex] >> currentValues[minIndex]) {
-                // Чтение успешно
-            } else {
-                // Чанк закончился, удаляем из списка
-                inputFiles.erase(inputFiles.begin() + minIndex);
-                currentValues.erase(currentValues.begin() + minIndex);
-            }
-        }
+	ofstream output(this->output_path);
+	if(!output) {
+		cerr << "Невозможно открыть временный файл!" << endl;
+		return;
+	}
 
-        outputFile.close();
+	while(!pq.empty()) {
+		pair<int, int> minNum = pq.top();
+		pq.pop();
+		output << minNum.first << endl;
+		int num;
+		if(tempFiles[minNum.second] >> num) pq.push({num, minNum.second});
+	}
 
-        // Закрываем и удаляем все чанки
-        for (size_t i = 0; i < chunkFiles.size(); i++) {
-            inputFiles[i].close();
-            remove(chunkFiles[i].c_str());
-        }
-    } else {
-        cout << "Unable to open output file: " << this->output_path << endl;
-        return;
-    }
+	for(int i = 0; i < tempFileCount; i++) {
+		tempFiles[i].close();
+		remove((this->tmp_dir_path + tempFileName + to_string(i) + ".txt").c_str());
+	}
+	output.close();
 }
 
 
 void Tape::sortTape(void) {
 	cout << " Начало сортировки..." << endl;
-
-	if(this->tape.size()  > this->M) { 
-		//splitVectorsAndSort();
-		vector<string> chunkFiles;
-		for(int i = 1; i <= this->M; i++) { 
-			string path = "/home/oworse/Desktop/myFiles/YADROtestTask/tmp/tmp" + to_string(i) + ".txt";
-			chunkFiles.push_back(path);
-		}
-		sortChunks();
-		mergeChunks(chunkFiles);
-	}	
-	else {
-		sort(this->tape.begin(), this->tape.end());
-		writeVectorToFile(this->tape, this->output_path);
-	}
-
+	splitVectorsAndSort();
 	cout << " Конец сортировки." << endl;
 	cout << " Отсортированная лента записана в файл: " << this->output_path << endl;
 }
