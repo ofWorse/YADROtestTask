@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <vector>
-#include "../src/Tape.h"
+#include "../src/headers/Tape.h"
 
 const std::string filepath = "./file.txt";
 
@@ -38,6 +38,7 @@ TEST_F(TapeTest, checkForEmptyTapeTest) {
 TEST_F(TapeTest, doNotConsistPathsTest) {
 	ASSERT_TRUE(!tape->consistPaths());
 }
+
 
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
